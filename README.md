@@ -1,3 +1,7 @@
+# React Binary Search Tree
+
+A binary search tree created with React JS. Includes a insert, lookup, and effecient remove algorithm.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
