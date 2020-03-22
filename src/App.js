@@ -1,64 +1,161 @@
 import React from "react";
 import "./App.css";
 
-//data to be sorted
-let data = [5, 3, 4, 7, 9, 1];
-
-//swap function
-function swap(data, first, second) {
-  //sets data 1 and 2 to data 2 and 1
-  [data[first], data[second]] = [data[second], data[first]];
+class Node {
+  constructor(value) {
+    this.left = null;
+    this.right = null;
+    this.value = value;
+  }
 }
 
-//partition function
-function partition(data, left, right) {
-  //declares a pivot point in the center of the dataset
-  let pivot = data[Math.floor((right + left) / 2)];
+class BinarySearchTree {
+  constructor() {
+    this.root = null;
+  }
+  insert(value) {
+    const myNode = new Node(value);
+    if (this.root === null) {
+      this.root = myNode;
+    } else {
+      let currentNode = this.root;
+      while (true) {
+        if (value < currentNode.value) {
+          if (!currentNode.left) {
+            currentNode.left = myNode;
+            return this;
+          }
+          currentNode = currentNode.left;
+        } else {
+          if (value > currentNode.value) {
+            currentNode.right = myNode;
+            return this;
+          }
+          currentNode = currentNode.right;
+        }
+      }
+    }
 
-  //while the left index is less than or equal to the right index run
-  while (left <= right) {
-    //while the left data is less than center data move to next index
-    while (data[left] < pivot) {
-      left++;
+    return this;
+  }
+  lookup(value) {
+    if (!this.root) {
+      console.log("Error no value");
+      return false;
     }
-    //while the right data is greater than center data move to next index
-    while (data[right] > pivot) {
-      right--;
-    }
-    //if the left index is less than the right swap indexs and move left and right index
-    if (left <= right) {
-      swap(data, left, right);
-      left++;
-      right--;
+    let currentNode = this.root;
+    while (currentNode) {
+      if (value < currentNode.value) {
+        currentNode = currentNode.left;
+        console.log("Value is less then root, moving left");
+      } else if (value > currentNode.value) {
+        currentNode = currentNode.right;
+        console.log("Value is greater then root, moving right");
+      } else if (currentNode.value === value) {
+        console.log("found value");
+        return currentNode;
+      }
     }
   }
-  //return the left index
-  return left;
-}
 
-//recursive part of the function
-function recursive(data, left, right) {
-  let index;
-  //if their are at least 2 items, sort data
-  if (data.length > 1) {
-    //index = the left index returned from patrition algorithm
-    index = partition(data, left, right);
-    //if the left most index (0) is less than partition-1, run
-    if (left < index - 1) {
-      //re-run partition alg with right = to the previous left index -1
-      recursive(data, left, index - 1);
+  remove(value) {
+    if (!this.root) {
+      return false;
     }
-    //if the right most index (0) is greater than partition, run
-    if (index < right) {
-      //re-run partition alg with left = to the previous left index
-      recursive(data, index, right);
+
+    let currentNode = this.root;
+    let parentNode = null;
+
+    while (currentNode) {
+      if (value < currentNode.value) {
+        parentNode = currentNode;
+        currentNode = currentNode.left;
+      } else if (value > currentNode.value) {
+        parentNode = currentNode;
+        currentNode = currentNode.right;
+      } else if (currentNode.value === value) {
+        //We have a match, get to work!
+
+        //Option 1: No right child:
+        if (currentNode.right === null) {
+          if (parentNode === null) {
+            this.root = currentNode.left;
+          } else {
+            //if parent > current value, make current left child a child of parent
+            if (currentNode.value < parentNode.value) {
+              parentNode.left = currentNode.left;
+
+              //if parent < current value, make left child a right child of parent
+            } else if (currentNode.value > parentNode.value) {
+              parentNode.right = currentNode.left;
+            }
+          }
+
+          //Option 2: Right child which doesnt have a left child
+        } else if (currentNode.right.left === null) {
+          currentNode.right.left = currentNode.left;
+          if (parentNode === null) {
+            this.root = currentNode.right;
+          } else {
+            //if parent > current, make right child of the left the parent
+            if (currentNode.value < parentNode.value) {
+              parentNode.left = currentNode.right;
+
+              //if parent < current, make right child a right child of the parent
+            } else if (currentNode.value > parentNode.value) {
+              parentNode.right = currentNode.right;
+            }
+          }
+
+          //Option 3: Right child that has a left child
+        } else {
+          //find the Right child's left most child
+          let leftmost = currentNode.right.left;
+          let leftmostParent = currentNode.right;
+          while (leftmost.left !== null) {
+            leftmostParent = leftmost;
+            leftmost = leftmost.left;
+          }
+
+          //Parent's left subtree is now leftmost's right subtree
+          leftmostParent.left = leftmost.right;
+          leftmost.left = currentNode.left;
+          leftmost.right = currentNode.right;
+
+          if (parentNode === null) {
+            this.root = leftmost;
+          } else {
+            if (currentNode.value < parentNode.value) {
+              parentNode.left = leftmost;
+            } else if (currentNode.value > parentNode.value) {
+              parentNode.right = leftmost;
+            }
+          }
+        }
+
+        return true;
+      }
     }
   }
-  //return sorted data
-  return data;
 }
 
-//Calls the recursive function
+const myBinarySearchTree = new BinarySearchTree();
+
+myBinarySearchTree.insert(8);
+
+myBinarySearchTree.insert(1);
+
+myBinarySearchTree.insert(4);
+
+myBinarySearchTree.insert(3);
+
+myBinarySearchTree.insert(1);
+
+myBinarySearchTree.remove(1);
+
+myBinarySearchTree.lookup(1);
+
+console.log(myBinarySearchTree);
 export default function App() {
-  return <div className="App">{recursive(data, 0, data.length - 1)}</div>;
+  return <div className="App" />;
 }
